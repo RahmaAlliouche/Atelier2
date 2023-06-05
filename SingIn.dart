@@ -1,116 +1,50 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 import 'doctor/MenuD.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 class LoginScreen extends StatefulWidget {
   @override
-  loginscreenstate createState() => loginscreenstate();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Sign In',
-        home: LoginScreen());
+      debugShowCheckedModeBanner: false,
+      title: 'Login',
+      home: LoginScreen(),
+    );
   }
 }
 
-class loginscreenstate extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   bool isRememberMe = false;
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  bool isobscurePass = true;
 
-  Widget buildemail() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          'Email',
-          style: TextStyle(
-              color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 12),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black38, blurRadius: 7, offset: Offset(0, 2))
-              ]),
-          height: 60,
-          child: TextField(
-            keyboardType: TextInputType.emailAddress,
-            style: TextStyle(color: Colors.black38),
-            decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.only(top: 14),
-                prefixIcon: Icon(
-                  Icons.email,
-                  color: Colors.greenAccent,
-                ),
-                hintText: 'Email',
-                helperStyle: TextStyle(color: Colors.black38)),
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget buildPassword() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          'Password',
-          style: TextStyle(
-              color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 12),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black38, blurRadius: 7, offset: Offset(0, 2))
-              ]),
-          height: 60,
-          child: TextField(
-            obscureText: true,
-            style: TextStyle(color: Colors.black38),
-            decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.only(top: 14),
-                prefixIcon: Icon(
-                  Icons.lock,
-                  color: Colors.greenAccent,
-                ),
-                hintText: 'Password',
-                helperStyle: TextStyle(color: Colors.black38)),
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget buildforgotpass() {
+  Widget buildForgotPass() {
     return Container(
       alignment: Alignment.centerRight,
       child: TextButton(
         onPressed: () => print("forgot password"),
         child: Text(
-          'Forgot Password ?',
+          'Forgot Password?',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
-  Widget buildremember() {
+  Widget buildRemember() {
     return Container(
       height: 20,
       child: Row(
@@ -131,31 +65,46 @@ class loginscreenstate extends State<LoginScreen> {
           Text(
             'Remind Me',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget buildloginbuttom() {
+  void _login() {
+    if (_formKey.currentState!.validate()) {
+      // Perform the login operation here
+      String email = _emailController.text;
+      String password = _passwordController.text;
+
+      // Navigate to the new page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(),
+        ),
+      );
+    }
+  }
+
+  Widget buildLoginButton() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 25),
       width: double.infinity,
       child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: ((context) => HomePage())));
-          },
-          style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.white)),
-          child: Text(
-            'LOGIN',
-            style: TextStyle(
-                color: Colors.greenAccent,
-                fontSize: 18,
-                fontWeight: FontWeight.bold),
-          )),
+        onPressed: _login,
+        style: ElevatedButton.styleFrom(
+          primary: Colors.white,
+        ),
+        child: Text(
+          'LOGIN',
+          style: TextStyle(
+            color: Colors.greenAccent,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 
@@ -171,42 +120,134 @@ class loginscreenstate extends State<LoginScreen> {
                 height: double.infinity,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
                       Color(0xFF69F0AE),
                       Color(0xFF69F0AE),
                       Color(0xFF69F0AE),
                       Color(0xFF69F0AE),
-                    ])),
+                    ],
+                  ),
+                ),
                 child: SingleChildScrollView(
-                  //pour scroll screen
                   padding: EdgeInsets.symmetric(
                     horizontal: 25,
                     vertical: 120,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        'Sign In',
-                        style: TextStyle(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          'Sign In',
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 50),
-                      buildemail(),
-                      SizedBox(height: 50),
-                      buildPassword(),
-                      buildforgotpass(),
-                      buildremember(),
-                      buildloginbuttom(),
-                    ],
+                            fontSize: 60,
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 50,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 10.0, right: 10),
+                          child: TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.email),
+                              prefixIconColor: Colors.greenAccent,
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 25,
+                                horizontal: 20,
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.white,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              hintText: 'Email',
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          height: 25,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 10.0, right: 10),
+                          child: TextFormField(
+                            obscureText: isobscurePass,
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.lock),
+                              prefixIconColor: Colors.greenAccent,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  isobscurePass
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isobscurePass = !isobscurePass;
+                                  });
+                                },
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 25,
+                                horizontal: 20,
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.greenAccent,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              hintText: 'Password',
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter a password';
+                              }
+                              if (value.length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        buildForgotPass(),
+                        buildRemember(),
+                        buildLoginButton(),
+                      ],
+                    ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
